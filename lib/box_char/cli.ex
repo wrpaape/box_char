@@ -4,14 +4,20 @@ defmodule BoxChar.CLI do
   @def_opts Application.get_env(:box_char, :def_opts)
   @parse_opts [
     switches: [
-      help: :boolean,
-      swap: :boolean,
-      map:  :boolean,
+      help:  :boolean,
+      swap:  :boolean,
+      map:   :boolean,
+      thin:  :boolean,
+      thick: :boolean,
+      both:  :boolean
     ],
     aliases:  [
       h: :help,
       m: :map,
-      s: :swap
+      s: :swap,
+      t: :thin,
+      T: :thick,
+
     ]
   ]
 
