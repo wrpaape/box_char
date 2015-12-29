@@ -1,0 +1,19 @@
+# BoxChars
+
+**TODO: Add description**
+
+## Installation
+
+If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+
+  1. Add box_chars to your list of dependencies in `mix.exs`:
+
+        def deps do
+          [{:box_chars, "~> 0.0.1"}]
+        end
+
+  2. Ensure box_chars is started before your application:
+
+        def application do
+          [applications: [:box_chars]]
+        end
