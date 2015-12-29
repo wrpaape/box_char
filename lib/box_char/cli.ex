@@ -3,17 +3,17 @@ defmodule BoxChar.CLI do
  # File.stream!(path, [:read, :char_list, encoding: :unicode], :line)   
   @def_opts Application.get_env(:box_char, :def_opts)
   @parse_opts [
-    [
-      switches: [help: :boolean, swap: :string, map: :string],
-      aliases:  [h:    :help,    s:    :swap,   m:   :map]
+    mode: [
+      switches: [help:   :boolean, swap:    :boolean, map:  :boolean],
+      aliases:  [h:      :help,    s:       :swap,    m:    :map]
     ],
-    [
-      switches: [single: :string, double: :boolean, all: :boolean],
-      aliases:  [s:      :single, d:      :double,  a:   :all]
+    num_lines: [
+      switches: [single: :boolean, double: :boolean, both: :boolean],
+      aliases:  [s:      :single,  d:       :double, b:    :both]
     ],
-    [
-      switches: [light: :boolean, heavy: :boolean, both: :boolean],
-      aliases:  [l:      :light,  h:      :heavy,  b:    :both]
+    line_weight: [
+      switches: [light:  :boolean, heavy:   :boolean, both: :boolean],
+      aliases:  [l:      :light,   h:       :heavy,   b:    :both]
     ]
   ]
 
@@ -47,9 +47,9 @@ defmodule BoxChar.CLI do
     |> TicTacToe.start
   end
 
-  def parse_args(argv) do
+  def parse_args(argv, [| rem_parse_opts]), do: parse_mode([], argv, path_)
     argv
-    |> OptionParser.parse(@parse_opts)
+    |> OptionParser.parse_head(path_and_mode_parse_opts)
     |> case do
       {[help: true], _, _ }  -> :help
        
