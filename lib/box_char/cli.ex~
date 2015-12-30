@@ -4,8 +4,8 @@ defmodule BoxChar.CLI do
   @def_path Application.get_env(:box_char, :def_path)
   @def_opts Application.get_env(:box_char, :def_opts)
 
-  @parse_opts [switches: [help: :boolean, map: :string, swap: :string],
-               aliases:  [h:    :help,    m:   :map,    s:    :swap]]
+  @mode_parse_opts [switches: [help: :boolean, map: :string, swap: :string],
+                    aliases:  [h:    :help,    m:   :map,    s:    :swap]]
 
   # @type_parse_opts [switches: [map: :boolean, swap: :boolean, light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
   #                   aliases:  [m:   :map,     s:    :swap,    l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]
@@ -22,40 +22,46 @@ defmodule BoxChar.CLI do
     argv
     |> OptionParser.parse(@parse_opts)
     |> case do
-      {[help: true], _, _} ->
+      {[help: true], ________, _______} ->
         |> print_help_and_halt
 
-      {[], _, _} ->
+      {[], _____________, ____________} ->
         "please specify <mode> of operation"
         |> handle_error
        
-      {[mode_tup], rem_argv, _} ->
+      {[{mode, spec_str}], rem_argv, _} ->
         rem_argv
         |> parse_path
+        |> validate_path
         |> extract_files
-        |> parse_type(mode_tup) 
+        |> parse_spec(spec_str) 
+        |> validate_spec(mode)
 
-        _ -> 
+        _______________________________ -> 
         "too many args!"
         |> handle_error
     end
   end
 
-  def parse_path([path]), do: path
-  def parse_path([]),     do: handle_error("please specify <path> to file or populated directory")
-  def parse_path(_),      do: handle_error("too many args!") 
+  def parse_path([path_str]), do: {Path.wildcard(path_str),path_str} 
+  def parse_path([]),         do: handle_error("please specify <path> to file or populated directory")
+  def parse_path(_),          do: handle_error("too many args!") 
 
-  def extract_files(path) do
-    path
-    |> Path.wildcard
-    |> Enum.filter(&File.regular?/1)
+  def validate_path({[], path_str}),        do: handle_error("invalid path: " <> path_str)
+  def validate_path({path_glob, path_str}), do: {Enum.filter(path_glob, &File.regular?/1), path_str}
+
+  def extract_files({[], path_str}), do: handle_error("failed to find file(s) at path: " <> path_str)
+  def extract_files({files, _}),     do: files
+
+  def parse_spec(files, spec_str) do
+    spec_str
+    |> String.split("/")
+    |> OptionParser.parse(@spec_parse_opts)
   end
 
-  def parse_next([last_arg], [], opts_tup), do: opts_tup
 
-  def parse_next([], [], opts_tup), do: opts_tup
 
-  def process(:help) do
+  def print_help_and_halt do
     """
     usage:
 
