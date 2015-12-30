@@ -3,15 +3,6 @@ defmodule BoxChar.CLI do
  # File.stream!(path, [:read, :char_list, encoding: :unicode], :line)   
   @def_opts Application.get_env(:box_char, :def_opts)
 
-  # @parse_opts [help: [switches: [help:  :boolean],
-  #                     aliases:  [h:     :help]],
-
-  #              mode: [switches: [map:   :boolean, swap:  :boolean],
-  #                     aliases:  [m:     :map,     s:     :swap]],
-
-  #              type: [switches: [light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
-  #                     aliases:  [l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]]
-
   @help_parse_opts [switches: [help: :boolean],
                     aliases:  [h:    :help]]
 
@@ -37,18 +28,20 @@ defmodule BoxChar.CLI do
         |> Path.wildcard
         |> Enum.filter(&File.regular?/1)
         |> case do
-          []    -> {:error, :path, argv} 
+          []    -> {:error, "path", argv} 
 
-          files -> parse_next(:path, rem_argv, [files])
+          files -> parse_args(rem_argv, files)
         end
     end
   end
 
-  def parse_args(parse_opts, argv) do
+  def parse_args(argv, files) do
     argv
-    |> OptionParser.parse_head(parse_opts)
+    |> OptionParser.parse(@main_parse_opts)
     |> case do
-      {[{opt_val, true}], rem_argv, _} -> {opt_val, rem_argv}
+      {[], [], _} -> {:erroor, "too many args!"}
+
+      {opts, rem_argv, _} -> {opt_val, rem_argv}
 
       ________________________________ -> :error
     end
