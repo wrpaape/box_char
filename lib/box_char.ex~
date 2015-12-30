@@ -1,14 +1,9 @@
-defmodule BoxChars do
-  def sigil_b("h", []), do: "─"
-  def sigil_B(string, 'h'), do: "═"
-  def sigil_b(string, 'v'), do: "│"
-  def sigil_B(string, 'v'), do: "║"
+defmodule BoxChar do
+  defmacro def_put_msg do
+    defp put_msg(msg), do: %__MODULE__{message: msg}
+  end
 
-  
-  def sigil_b(string, 'v'), do: "│"
-  def sigil_B(string, 'v'), do: "║"
-
-  @box_chars %{
+  @box_char %{
     thick:  %{
       lines: %{
         horiz: "═",
@@ -43,10 +38,10 @@ defmodule BoxChars do
     }
   }
 
-  def get_chars(key_path), do: get_in(@box_chars, key_path)
+  def get_char(key_path), do: get_in(@box_char, key_path)
 
   def get_config(:grid, thickness) do
-    set = Map.get(@box_chars, thickness)
+    set = Map.get(@box_char, thickness)
 
     %{horiz: horiz, vert: vert} = Map.get(set, :lines)
 

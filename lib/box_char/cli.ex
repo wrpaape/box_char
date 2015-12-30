@@ -1,23 +1,31 @@
 defmodule BoxChar.CLI do
   alias IO.ANSI
+  alias BoxChar.CLIError
 
   @def_path Application.get_env(:box_char, :def_path)
   @def_opts Application.get_env(:box_char, :def_opts)
 
-  @mode_parse_opts [strict:  [help: :boolean, map: :string, swap: :string],
-                    aliases: [h:    :help,    m:   :map,    s:    :swap]]
+  @mode_parse_opts    [strict:  [help: :boolean,  map:   :string,  swap:   :string],
+                       aliases: [h:    :help,     m:     :map,     s:      :swap]]
 
   @charset_parse_opts [strict:  [light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
-                    aliases: [l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]
+                       aliases: [l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]
 
-  @file_stream_modes [:read, :char_list, encoding: :unicode]
   @file_stream_modes [:read, :char_list, encoding: :unicode]
 
   def main(argv) do
-    argv
-    |> OptionParser.parse(@mode_parse_opts)
-    |> handle_parse
-    |> process
+    try do
+      argv
+      |> OptionParser.parse(@mode_parse_opts)
+      |> handle_parse
+      |> process
+      
+    catch
+      :error, %CLIError{message: msg} -> 
+        <> msg
+        <> "\n"
+        |> alert(:red)
+    end
   end
 
   #external API ^
@@ -29,13 +37,9 @@ defmodule BoxChar.CLI do
     |> parse_charset(spec_tup)
   end
 
-  def handle_parse({[], _, _}),               do: handle_error("please specify <mode> of operation")
-  def handle_parse({_, _, []}),               do: handle_error("too many modes!")
-  def handle_parse({_, _, invalid_args}),     do
-    ["invalid args:" | invalid_args]
-    |> Enum.map_join("\n  ", &elem(&1, 0))
-    |> handle_error
-  end
+  def handle_parse({[], _, _}),               do: raise(CLIError, :missing_mode)
+  def handle_parse({_, _, []}),               do: raise(CLIError, :multiple_modes)
+  def handle_parse({_, _, args}),             do: raise(CLIError, {:invalid_args, args})
 
 
   def parse_path([path_str]) do
@@ -44,29 +48,47 @@ defmodule BoxChar.CLI do
     |> handle_parse(path_str)
   end
 
-  def parse_path([]),        do: handle_error("please specify <path> to file or populated directory")
-  def parse_path(_),         do: handle_error("too many args!") 
+  def parse_path([]),        do: raise(CLIError, :no_path)
+  def parse_path(_),         do: raise(CLIError, :extra_args) 
 
 
-  def handle_parse([], path_str),       do: handle_error("invalid path: " <> path_str)
+  def handle_parse([], path_str),       do: raise(CLIError, {:invalid_path, path_str})
   def handle_parse(path_glob, path_str) do
     path_glob
     |> Enum.filter(&File.regular?/1)
     |> parse_file_paths(path_str)
   end
 
-  def parse_file_paths([], path_str),  do: handle_error("failed to find file(s) at path: " <> path_str)
+  def parse_file_paths([], path_str),  do: raise(CLIError, {:no_files_found, path_str})
   def parse_file_paths(file_paths, _), do: file_paths
 
   def parse_charset(files, {mode, charset_str}) do
     charset_str
-    |> String.split("/")
+    |> String.split([" ", "/"], trim: true)
     |> OptionParser.parse(@charset_parse_opts)
     |> handle_parse(mode, files)
   end
 
-  def handle_parse({[_], _, _}, :swap, _), do: handle_error("please specify <new charset> to swap to")
+  def handle_parse({[{old, true}, {new, true}], _, _}, :swap, _) do
+  end
 
+  def handle_parse({[_], _, _}, :swap, _),                       do: raise(CLIError, :missing_swap_charset)
+  def handle_parse(_, :swap, _),                                 do: raise(CLIError, :extra_swap_charsets)
+
+
+
+  def process({:error, opt, argv}) do
+    """
+    failed to parse <#{opt}> from:
+
+      #{argv}
+    """
+    |> alert(:red)
+
+    process(:help)
+  end
+
+  def process({[:swap, old_type, new_type], files})
 
   def print_help_and_halt do
     """
@@ -86,20 +108,6 @@ defmodule BoxChar.CLI do
 
     System.halt(0)
   end
-
-  def process({:error, opt, argv}) do
-    """
-    failed to parse <#{opt}> from:
-
-      #{argv}
-    """
-    |> alert(:red)
-
-    process(:help)
-  end
-
-  def process({[:swap, old_type, new_type], files})
-
   #helpers v  
 
 

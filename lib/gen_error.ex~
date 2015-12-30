@@ -1,0 +1,3 @@
+defmodule BoxChar.GenError do
+  defexception [:message]
+end

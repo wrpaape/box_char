@@ -1,0 +1,3 @@
+defmodule BoxChar.ArgVError do
+  
+end
