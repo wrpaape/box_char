@@ -7,7 +7,7 @@ defmodule BoxChar.CLI do
   @mode_parse_opts [strict:  [help: :boolean, map: :string, swap: :string],
                     aliases: [h:    :help,    m:   :map,    s:    :swap]]
 
-  @spec_parse_opts [strict:  [light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
+  @charset_parse_opts [strict:  [light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
                     aliases: [l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]
 
   @file_stream_modes [:read, :char_list, encoding: :unicode]
@@ -23,13 +23,13 @@ defmodule BoxChar.CLI do
   #external API ^
 
   def handle_parse({[help: true], _, _}),     do: print_help_and_halt
-  def handle_parse({[], _, _}),               do: handle_error("please specify <mode> of operation")
   def handle_parse({[spec_tup], rem_argv, []) do
     rem_argv
     |> parse_path
-    |> parse_spec(spec_tup)
+    |> parse_charset(spec_tup)
   end
 
+  def handle_parse({[], _, _}),               do: handle_error("please specify <mode> of operation")
   def handle_parse({_, _, []}),               do: handle_error("too many modes!")
   def handle_parse({_, _, invalid_args}),     do
     ["invalid args:" | invalid_args]
@@ -38,13 +38,13 @@ defmodule BoxChar.CLI do
   end
 
 
-  def parse_path([]),        do: handle_error("please specify <path> to file or populated directory")
   def parse_path([path_str]) do
     path_str
     |> Path.wildcard
     |> handle_parse(path_str)
   end
 
+  def parse_path([]),        do: handle_error("please specify <path> to file or populated directory")
   def parse_path(_),         do: handle_error("too many args!") 
 
 
@@ -58,27 +58,29 @@ defmodule BoxChar.CLI do
   def parse_file_paths([], path_str),  do: handle_error("failed to find file(s) at path: " <> path_str)
   def parse_file_paths(file_paths, _), do: file_paths
 
-  def parse_spec(files, {mode, spec_str}) do
-    spec_str
+  def parse_charset(files, {mode, charset_str}) do
+    charset_str
     |> String.split("/")
-    |> OptionParser.parse(@spec_parse_opts)
+    |> OptionParser.parse(@charset_parse_opts)
     |> handle_parse(mode, files)
   end
 
-  def handle_parse({_}, :map, _) do
-    
-  end
+  def handle_parse({[_], _, _}, :swap, _), do: handle_error("please specify <new charset> to swap to")
 
 
   def print_help_and_halt do
     """
     usage:
 
-      box_char <path> map <type>
+      box_char <path> map <charset>
 
     or
 
-      box_char <path> swap <old_type> <new_type>
+      box_char <path> map <charsets (slash delimited)>
+
+    or
+
+      box_char <path> swap <old charset> <new charset>
     """
     |> alert(:blue)
 
