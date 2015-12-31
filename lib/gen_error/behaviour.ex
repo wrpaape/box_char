@@ -12,21 +12,21 @@ defmodule GenError.Behaviour do
     end
   end
 
-  defmacro error_with_arg(reason, msg) when is_atom(reason) and is_binary(msg) do 
+  defmacro error_with_arg(reason, fun = {anon, _, _}) when is_atom(reason) and anon in ~w(fn &)a do
     quote do
       def exception({reason, arg}) do
-        [unquote(msg), ":", highlight_invalid, arg]
-        |> Enum.join
+        unquote(fun)
+        |> apply([arg])
         |> put_msg
       end
     end
   end
 
-  defmacro error_with_arg(reason, fun) when is_atom(reason) do
+  defmacro error_with_arg(reason, msg) when is_atom(reason) do 
     quote do
       def exception({reason, arg}) do
-        unquote(fun)
-        |> apply([arg])
+        [unquote(msg), ":", highlight_invalid, arg]
+        |> Enum.join
         |> put_msg
       end
     end
