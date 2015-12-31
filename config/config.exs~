@@ -4,7 +4,22 @@ use Mix.Config
 
   config :box_char, [def_path: "**",
                      def_opts: ~w(map heavy)a,
-                     timeout:  :infinity]
+                     timeout:  :infinity,
+                     usage:
+    """
+
+    usage:
+
+      box_char <path> map <charset>
+
+    or
+
+      box_char <path> map <charsets (slash delimited)>
+
+    or
+
+      box_char <path> swap <old charset>/<new charset>
+    """]  
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

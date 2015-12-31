@@ -1,25 +1,36 @@
 defmodule GenError.Behaviour do
   alias IO.ANSI
 
-  @highlight_invalid ":\n  " <> ANSI.bright <> ANSI.white_background
+  def highlight_invalid, do: "\n  " <> ANSI.bright <> ANSI.white_background
 
-  defmacro error(reason, msg) do
+  defmacro error(reason, msg) when is_atom(reason) and is_binary(msg) do
     quote do
-      def exception(reason), do: put_msg(unquote(msg))
+      def exception(reason) do
+        unquote(msg)
+        |> put_msg
+      end
     end
   end
 
-  defmacro error(reason, code, [do: block]) do
+  defmacro error_with_arg(reason, msg) when is_atom(reason) and is_binary(msg) do 
     quote do
-      def exception({reason, unquote(code)}), do: put_msg(unquote(block))
+      def exception({reason, arg}) do
+        [unquote(msg), ":", highlight_invalid, arg]
+        |> Enum.join
+        |> put_msg
+      end
     end
   end
 
-  defmacro error(reason, str, msg) do
+  defmacro error_with_arg(reason, fun) when is_atom(reason) do
     quote do
-      def exception({reason, str}), do: put_msg(msg  <> @highlight_invalid <> str)
+      def exception({reason, arg}) do
+        unquote(fun)
+        |> apply([arg])
+        |> put_msg
+      end
     end
   end
 
-  defmacrop put_msg(msg), do: quote do: %__MODULE__{message: msg}
+  defmacro put_msg(msg), do: quote do: %__MODULE__{message: unquote(msg)}
 end
