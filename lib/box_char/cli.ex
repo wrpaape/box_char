@@ -7,8 +7,8 @@ defmodule BoxChar.CLI do
   @def_opts Application.get_env(:box_char, :def_opts)
   @timeout  Application.get_env(:box_char, :timeout)
 
-  @mode_parse_opts    [strict:  [help: :boolean,  map:   :string,  swap:   :string],
-                       aliases: [h:    :help,     m:     :map,     s:      :swap]]
+  @parse_opts [strict:  [help: :boolean,  map:   :string,  swap:   :string],
+               aliases: [h:    :help,     m:     :map,     s:      :swap]]
 
   @charset_parse_opts [strict:  [light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
                        aliases: [l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]
@@ -18,7 +18,7 @@ defmodule BoxChar.CLI do
   def main(argv) do
     try do
       argv
-      |> OptionParser.parse(@mode_parse_opts)
+      |> OptionParser.parse(@parse_opts)
       |> handle_parse
       |> process
       
@@ -38,7 +38,7 @@ defmodule BoxChar.CLI do
   #external API ^
 
   def handle_parse({[help: true], _, _}),     do: print_usage_and_halt
-  def handle_parse({[spec_tup], rem_argv, []) do
+  def handle_parse({[spec_tup], rem_argv, []}) do
     rem_argv
     |> parse_path
     |> parse_charset(spec_tup)
@@ -72,12 +72,21 @@ defmodule BoxChar.CLI do
   def parse_charset(files, {mode, charset_str}) do
     charset_str
     |> String.split([" ", "/"], trim: true)
-    |> OptionParser.parse(@charset_parse_opts)
+    |> Enum.map(&extract_charset/1)
     |> handle_parse(mode, files)
   end
 
-  def handle_parse({[{old, true}, {new, true}], _, _}, :swap, _) do
-  end
+  def extract_charset(charset_str) when charset_str in ~w(l light),  do: :light
+  def extract_charset(charset_str) when charset_str in ~w(h heavy),  do: :lheavy
+  def extract_charset(charset_str) when charset_str in ~w(d double), do: :double
+  def extract_charset(charset_str) when charset_str in ~w(a all),    do: :all
+  def extract_charset(charset_str),                                  do: raise(CLIError, {:invalid_charset, charset_str})
+
+  def handle_parse(~w(light heavy), :swap, files) do
+  def handle_parse(~w(light heavy), :swap, files) do
+  def handle_parse(~w(light heavy), :swap, files) do
+  def handle_parse(~w(light heavy), :swap, files) do
+
 
   def handle_parse({[_], _, _}, :swap, _),                       do: raise(CLIError, :missing_swap_charset)
   def handle_parse(_, :swap, _),                                 do: raise(CLIError, :extra_swap_charsets)

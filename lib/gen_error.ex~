@@ -4,6 +4,8 @@ defmodule GenError do
       defexception [:message] 
 
       import GenError.Behaviour
+      
+      alias IO.ANSI
     end
   end
 end
