@@ -1,9 +1,11 @@
 defmodule BoxChar.CLI do
   alias IO.ANSI
   alias BoxChar.CLIError
+  alias BoxChar.ArgVError
 
   @def_path Application.get_env(:box_char, :def_path)
   @def_opts Application.get_env(:box_char, :def_opts)
+  @timeout  Application.get_env(:box_char, :timeout)
 
   @mode_parse_opts    [strict:  [help: :boolean,  map:   :string,  swap:   :string],
                        aliases: [h:    :help,     m:     :map,     s:      :swap]]
@@ -21,17 +23,21 @@ defmodule BoxChar.CLI do
       |> process
       
     catch
-      :error, %CLIError{message: msg} -> 
-        "oops!:"
-        <> msg
-        <> "\n"
+      :error, exception = %{message: msg} ->
+        msg
         |> alert(:red)
+
+        exception
+        |> handle_exception
+
+    after
+      @timeout -> System.halt(0)
     end
   end
 
   #external API ^
 
-  def handle_parse({[help: true], _, _}),     do: print_help_and_halt
+  def handle_parse({[help: true], _, _}),     do: print_usage_and_halt
   def handle_parse({[spec_tup], rem_argv, []) do
     rem_argv
     |> parse_path
@@ -91,8 +97,9 @@ defmodule BoxChar.CLI do
 
   def process({[:swap, old_type, new_type], files})
 
-  def print_help_and_halt do
+  def print_usage_and_halt do
     """
+
     usage:
 
       box_char <path> map <charset>
@@ -111,6 +118,8 @@ defmodule BoxChar.CLI do
   end
   #helpers v  
 
+  def handle_exception(%ArgVError{}), do: print_usage_and_halt
+  def handle_exception(%CLIError{}),  do: System.halt(0)
 
   defmacrop alert(msg, color) do
     quote do

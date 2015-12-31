@@ -3,7 +3,8 @@
 use Mix.Config
 
   config :box_char, [def_path: "**",
-                     def_opts: ~w(map heavy)a]
+                     def_opts: ~w(map heavy)a,
+                     timeout:  :infinity]
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
