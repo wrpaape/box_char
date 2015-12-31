@@ -1,7 +1,7 @@
 defmodule BoxChar.CLI do
   alias IO.ANSI
-  # alias BoxChar.CLIError
-  # alias BoxChar.ArgVError
+  alias BoxChar.CLIError
+  alias BoxChar.ArgVError
 
   # require CLIError
   # require ArgVError 
@@ -33,12 +33,16 @@ defmodule BoxChar.CLI do
 
         exception
         |> handle_exception
+
+    after
+      0
+      |> System.halt
     end
   end
 
   #external API ^
 
-  def handle_parse({[help: true], _, _}),      do: print_usage_and_halt
+  def handle_parse({[help: true], _, _}),      do: print_usage
   def handle_parse({[spec_tup], rem_argv, []}) do
     rem_argv
     |> parse_path
@@ -103,18 +107,13 @@ defmodule BoxChar.CLI do
 
   # def process({[:swap, old_type, new_type], files})
 
-  defp print_usage_and_halt do
-    @usage
-    |> alert(:blue)
+  defp print_usage, do: alert(@usage, :blue)
 
-    System.halt(0)
-  end
-
-  # def handle_exception(%ArgVError{}), do: print_usage_and_halt
-  # def handle_exception(%CLIError{}),  do: System.halt(0)
-  def handle_exception(_),  do: System.halt(0)
+  def handle_exception(%ArgVError{}), do: print_usage
+  def handle_exception(%CLIError{}),  do: exit(:normal) 
+  def handle_exception(_unhandled),   do: alert("\n** UNHANDLED EXCEPTION **", :blink_slow)
 
   #helpers v  
 
-  defp alert(msg, color), do: IO.puts(apply(ANSI, color, []) <> msg <> ANSI.reset)
+  defp alert(msg, ansi_fun), do: IO.puts(apply(ANSI, ansi_fun, []) <> msg <> ANSI.reset)
 end
