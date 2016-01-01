@@ -1,35 +1,44 @@
 defmodule GenError.Behaviour do
   alias IO.ANSI
-  alias Mix.Utils
 
   defmacro error(reason) when is_atom(reason) do
     quote do
+      unquote(reason)
+      |> error(unquote(default_msg(reason)))
+    end
+  end
+
+  defmacro error(reason, msg) when is_atom(reason) and is_binary(msg) do
+    quote do
       def exception(unquote(reason)) do
-        unquote(reason)
-        |> retrieve_msg
+        unquote(msg)
         |> put_msg
       end
     end
   end
 
-  defmacro error_with_arg(reason) when is_atom(reason) do 
+  defmacro error_with_args(reason) when is_atom(reason) do 
     quote do
-      def exception({unquote(reason), arg}) do
-        retrieve_msg(unquote(reason))
+      unquote(reason)
+      |> error_with_args(unquote(default_msg(reason)))
+    end
+  end
+
+  defmacro error_with_args(reason, msg) when is_atom(reason) and is_binary(msg) do
+    quote do
+      def exception({unquote(reason), args}) do
+        unquote(msg)
         <> ":"
-        <> emphasize(arg)
+        <> emphasize(args)
         |> put_msg
       end
     end
   end
 
-  defmacro error_with_arg(reason, fun) when is_atom(reason) do
+  defmacro emphasize(args) when is_list(args) do
     quote do
-      def exception({unquote(reason), arg}) do
-        unquote(fun)
-        |> apply([arg])
-        |> put_msg
-      end
+      unquote(args)
+      |> Enum.map_join(&emphasize/1)
     end
   end
 
@@ -44,17 +53,13 @@ defmodule GenError.Behaviour do
     end
   end
 
-  defmacro put_msg(msg), do: quote do: %__MODULE__{message: unquote(msg)}
-
-  defmacro retrieve_msg(reason) do
+  defp default_msg(reason) when is_atom(reason) do
     quote do
-      __MODULE__
-      |> Module.split
-      |> List.first
-      |> Utils.underscore
-      |> String.to_atom
-      |> Application.get_env(:errors)
-      |> get_in([__MODULE__, unquote(reason)])
+      unquote(reason)
+      |> to_string
+      |> :binary.replace(:binary.compile_pattern(~w(- _)), " ", [:global])
     end
   end
+
+  defmacro put_msg(msg), do: quote do: %__MODULE__{message: unquote(msg)}
 end
