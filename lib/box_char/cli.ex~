@@ -16,24 +16,25 @@ defmodule BoxChar.CLI do
   @file_stream_modes [:read, :char_list, encoding: :unicode]
 
   def main(argv) do
-    try do
+    # try do
       argv
       |> OptionParser.parse(@parse_opts)
       |> handle_parse
-      |> BoxChar.process
+      # |> IO.inspect
+      # |> BoxChar.process
       
-    catch
-      :error, exception = %{message: msg} ->
-        msg
-        |> alert(:red)
+    # catch
+    #   :error, exception = %{message: msg} ->
+    #     msg
+    #     |> alert(:red)
 
-        exception
-        |> handle_exception
+    #     exception
+    #     |> handle_exception
 
-    after
-      0
-      |> System.halt
-    end
+    # after
+    #   0
+    #   |> System.halt
+    # end
   end
 
   #external API ^
@@ -45,7 +46,7 @@ defmodule BoxChar.CLI do
     |> parse_charset(spec_tup)
   end
 
-  def handle_parse({[], _, _}),                do: raise(ArgVError, :missing_mode)
+  def handle_parse({[], _, []}),                do: raise(ArgVError, :missing_mode)
   def handle_parse({_, _, []}),                do: raise(ArgVError, :multiple_modes)
   def handle_parse({_, _, args}),              do: raise(CLIError, {:invalid_args, args})
 

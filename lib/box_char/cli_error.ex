@@ -6,7 +6,10 @@ defmodule BoxChar.CLIError do
   error_with_arg :invalid_charset
 
   error_with_arg :invalid_args, fn(args)->
-    [{retrieve_msg(:invalid_args)} | args]
-    |> Enum.map_join(highlight_invalid, &elem(&1, 0))
+    args
+    |> Enum.reduce(retrieve_msg(:invalid_args) <> ":", fn({arg, _}, msg)->
+      msg
+      <> emphasize(arg)
+    end)
   end
 end

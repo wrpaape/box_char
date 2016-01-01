@@ -1,5 +1,5 @@
 defmodule GenError do
-  defmacro __using__(app) do
+  defmacro __using__(_opts) do
     quote do
       defexception [:message] 
 

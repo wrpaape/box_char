@@ -9,6 +9,7 @@ alias BoxChar.CLIError
                      def_opts: ~w(map heavy)a,
                      timeout:  :infinity,
                      errors: [{CLIError,  [invalid_path:         "invalid path",
+                                           invalid_args:         "invalid args",
                                            no_files_found:       "failed to find file(s) at path",
                                            invalid_charset:      "invalid charset"]},
                               {ArgVError, [missing_mode:         "please specify <mode> of operation",
