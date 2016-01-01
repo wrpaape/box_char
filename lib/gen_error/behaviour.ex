@@ -12,22 +12,22 @@ defmodule GenError.Behaviour do
     end
   end
 
-  defmacro error_with_arg(reason, fun) when is_atom(reason) do
-    quote do
-      def exception({unquote(reason), arg}) do
-        unquote(fun)
-        |> apply([arg])
-        |> put_msg
-      end
-    end
-  end
-
   defmacro error_with_arg(reason) when is_atom(reason) do 
     quote do
       def exception({unquote(reason), arg}) do
         retrieve_msg(unquote(reason))
         <> ":"
         <> emphasize(arg)
+        |> put_msg
+      end
+    end
+  end
+
+  defmacro error_with_arg(reason, fun) when is_atom(reason) do
+    quote do
+      def exception({unquote(reason), arg}) do
+        unquote(fun)
+        |> apply([arg])
         |> put_msg
       end
     end

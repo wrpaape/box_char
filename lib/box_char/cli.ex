@@ -16,25 +16,24 @@ defmodule BoxChar.CLI do
   @file_stream_modes [:read, :char_list, encoding: :unicode]
 
   def main(argv) do
-    # try do
+    try do
       argv
       |> OptionParser.parse(@parse_opts)
       |> handle_parse
-      # |> IO.inspect
-      # |> BoxChar.process
+      |> BoxChar.process
       
-    # catch
-    #   :error, exception = %{message: msg} ->
-    #     msg
-    #     |> alert(:red)
+    catch
+      :error, exception = %{message: msg} ->
+        msg
+        |> alert(:red)
 
-    #     exception
-    #     |> handle_exception
+        exception
+        |> handle_exception
 
     # after
-    #   0
-    #   |> System.halt
-    # end
+    #   Mix.env
+    #   |> handle_shutdown
+    end
   end
 
   #external API ^
@@ -107,10 +106,19 @@ defmodule BoxChar.CLI do
   defp print_usage, do: alert(@usage, :blue)
 
   def handle_exception(%ArgVError{}), do: print_usage
-  def handle_exception(%CLIError{}),  do: exit(:normal) 
+  # def handle_exception(%CLIError{}),  do: exit(:normal) 
   def handle_exception(_unhandled),   do: alert("\n** UNHANDLED EXCEPTION **", :blink_slow)
+
+
+  def handle_shutdown(:test), do: exit(:normal)
+  def handle_shutdown(_),     do: System.halt(0) 
 
   #helpers v  
 
-  defp alert(msg, ansi_fun), do: IO.puts(apply(ANSI, ansi_fun, []) <> msg <> ANSI.reset)
+  defp alert(msg, ansi_fun) do
+    apply(ANSI, ansi_fun, [])
+    <> msg
+    <> ANSI.reset
+    |> IO.puts
+  end
 end

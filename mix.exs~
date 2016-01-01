@@ -1,12 +1,15 @@
-defmodule BoxChars.Mixfile do
+defmodule BoxChar.Mixfile do
   use Mix.Project
 
+  alias BoxChar.CLI
+
   def project do
-    [app: :box_chars,
+    [app: :box_char,
      version: "0.0.1",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     escript: escript_config,
      deps: deps]
   end
 
@@ -15,6 +18,10 @@ defmodule BoxChars.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [applications: [:logger]]
+  end
+
+  defp escript_config do
+    [main_module: CLI]
   end
 
   # Dependencies can be Hex packages:
