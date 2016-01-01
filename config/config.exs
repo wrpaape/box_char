@@ -2,24 +2,37 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+alias BoxChar.ArgVError
+alias BoxChar.CLIError
+
   config :box_char, [def_path: "**",
                      def_opts: ~w(map heavy)a,
                      timeout:  :infinity,
-                     usage:
-    """
+                     errors: [{CLIError,  [invalid_path:         "invalid path",
+                                           no_files_found:       "failed to find file(s) at path",
+                                           invalid_charset:      "invalid charset"]},
+                              {ArgVError, [missing_mode:         "please specify <mode> of operation",
+                                           multiple_modes:       "may only operate in one <mode> at a time",
+                                           missing_path:         "please specify <path> to file or populated directory",
+                                           extra_args:           "too many args!",
+                                           missing_swap_charset: "please specify <new charset> to swap with",
+                                           extra_swap_charsets:  "may only swap one <charset> at a time",
+                                           same_swap_charsets:   "<new_charset> must be different than <old_charset>",
+                                           swap_new_charset_all: "<old_charset> cannot be swapped for all charsets"]}],
+                     usage:    """
 
-    usage:
+                               usage:
 
-      box_char <path> map <charset>
+                                 box_char <path> map <charset>
 
-    or
+                               or
 
-      box_char <path> map <charsets (slash delimited)>
+                                 box_char <path> map <charsets (slash delimited)>
 
-    or
+                               or
 
-      box_char <path> swap <old charset>/<new charset>
-    """]  
+                                 box_char <path> swap <old charset>/<new charset>
+                               """]  
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

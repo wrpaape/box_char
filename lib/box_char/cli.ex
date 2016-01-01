@@ -102,16 +102,6 @@ defmodule BoxChar.CLI do
   def handle_dup(false, next, acc, rem, dups), do: filter_next([next | acc], rem, HashSet.put(dups, next))
   def handle_dup(_, _, acc, rem, dups),        do: filter_next(acc, rem, dups)
 
-  # def process({:error, opt, argv}) do
-  #  """
-  #  failed to parse <#{opt}> from:
-
-  #    #{argv}
-  #  """
-  #  |> alert(:red)
-
-  #  process(:help)
-  # end
 
   defp print_usage, do: alert(@usage, :blue)
 

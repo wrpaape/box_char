@@ -89,29 +89,19 @@ defmodule BoxChar.CLI do
   def handle_parse([old_charset, new_charset], :swap, files),  do: {:swap, files, old_charset, new_charset}
   def handle_parse(_, :swap, _),                               do: raise(ArgVError, :extra_swap_charsets) 
 
-  def handle_parse(charsets, :map, files), do: {:map, files, filter_next_charset([], charsets, HashSet.new)}
+  def handle_parse(charsets, :map, files), do: {:map, files, filter_next([], charsets, HashSet.new)}
 
-  def filter_next_charset(_, [:all | _], _),       do: [:all]
-  def filter_next_charset(acc, [], _),             do: acc
-  def filter_next_charset(acc, [next | rem], dups) do
+  def filter_next(_, [:all | _], _),       do: [:all]
+  def filter_next(acc, [], _),             do: acc
+  def filter_next(acc, [next | rem], dups) do
     dups
     |> HashSet.member?(next)
     |> handle_dup(next, acc, rem, dups)
   end
 
-  def handle_dup(false, next, acc, rem, dups), do: filter_next_charset([next | acc], rem, HashSet.put(dups, next))
-  def handle_dup(_, _, acc, rem, dups),        do: filter_next_charset(acc, rem, dups)
+  def handle_dup(false, next, acc, rem, dups), do: filter_next([next | acc], rem, HashSet.put(dups, next))
+  def handle_dup(_, _, acc, rem, dups),        do: filter_next(acc, rem, dups)
 
-  # def process({:error, opt, argv}) do
-  #  """
-  #  failed to parse <#{opt}> from:
-
-  #    #{argv}
-  #  """
-  #  |> alert(:red)
-
-  #  process(:help)
-  # end
 
   defp print_usage, do: alert(@usage, :blue)
 

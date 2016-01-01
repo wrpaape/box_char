@@ -1,20 +1,22 @@
 defmodule GenError.Behaviour do
   alias IO.ANSI
+  alias Mix.Utils
 
   def highlight_invalid, do: "\n  " <> ANSI.bright <> ANSI.white_background
 
-  defmacro error(reason, msg) when is_atom(reason) and is_binary(msg) do
+  defmacro error(reason) when is_atom(reason) do
     quote do
-      def exception(reason) do
-        unquote(msg)
+      def exception(unquote(reason)) do
+        unquote(reason)
+        |> retrieve_msg
         |> put_msg
       end
     end
   end
 
-  defmacro error_with_arg(reason, fun = {anon, _, _}) when is_atom(reason) and anon in ~w(fn &)a do
+  defmacro error_with_arg(reason, fun) when is_atom(reason) do
     quote do
-      def exception({reason, arg}) do
+      def exception({unquote(reason), arg}) do
         unquote(fun)
         |> apply([arg])
         |> put_msg
@@ -22,10 +24,10 @@ defmodule GenError.Behaviour do
     end
   end
 
-  defmacro error_with_arg(reason, msg) when is_atom(reason) do 
+  defmacro error_with_arg(reason) when is_atom(reason) do 
     quote do
-      def exception({reason, arg}) do
-        [unquote(msg), ":", highlight_invalid, arg]
+      def exception({unquote(reason), arg}) do
+        [retrieve_msg(unquote(reason)), ":", highlight_invalid, arg]
         |> Enum.join
         |> put_msg
       end
@@ -33,4 +35,16 @@ defmodule GenError.Behaviour do
   end
 
   defmacro put_msg(msg), do: quote do: %__MODULE__{message: unquote(msg)}
+
+  defmacro retrieve_msg(reason) do
+    quote do
+      __MODULE__
+      |> Module.split
+      |> List.first
+      |> Utils.underscore
+      |> String.to_atom
+      |> Application.get_env(:errors)
+      |> get_in([__MODULE__, unquote(reason)])
+    end
+  end
 end

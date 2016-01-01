@@ -34,28 +34,9 @@ defmodule BoxChar do
     }
   }
 
-  def get_char(key_path), do: get_in(@box_char, key_path)
-
-  def get_config(:grid, thickness) do
-    set = Map.get(@box_char, thickness)
-
-    %{horiz: horiz, vert: vert} = Map.get(set, :lines)
-
-    %{top: top_caps, mid: mid_caps, bot: bot_caps} = Map.get(set, :caps)
-    tb_caps_list = Enum.map([top_caps, bot_caps], &caps_tup/1)
-    mid_caps_tup = caps_tup(mid_caps)
-
-    %{top: top_joiner, mid: mid_joiner, bot: bot_joiner} = Map.get(set, :joiners)
-    tb_joiners = {top_joiner, bot_joiner}
-    
-    top_bot = {tb_joiners, tb_caps_list}
-    mid     = {mid_joiner, mid_caps_tup}
-
-    %{
-      borders: {horiz, mid, top_bot},
-      body:    vert
-    }
+  def process({:swap, old_charset, new_charset, files}) do
   end
 
-  defp caps_tup(%{left: left, right: right}), do: {left, right}
+  def process({:map, charsets, files}) do
+  end
 end
