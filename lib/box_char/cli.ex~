@@ -47,7 +47,7 @@ defmodule BoxChar.CLI do
 
   def handle_parse({[], _, []}),               do: raise(ArgVError, :missing_mode)
   def handle_parse({_, _, []}),                do: raise(ArgVError, :multiple_modes)
-  def handle_parse({_, _, args}),              do: raise(CLIError, {:invalid_args, args})
+  def handle_parse({_, _, args}),              do: raise(CLIError, {:invalid_args, Enum.map(args, &elem(&1, 0))})
 
 
   def parse_path([path_str]) do
@@ -106,7 +106,7 @@ defmodule BoxChar.CLI do
   defp print_usage, do: alert(@usage, :blue)
 
   def handle_exception(%ArgVError{}), do: print_usage
-  def handle_exception(%CLIError{}),  do: exit(:normal) 
+  # def handle_exception(%CLIError{}),  do: exit(:normal) 
   def handle_exception(_unhandled),   do: alert("\n** UNHANDLED EXCEPTION **", :blink_slow)
 
 

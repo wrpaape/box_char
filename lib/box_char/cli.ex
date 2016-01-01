@@ -47,7 +47,7 @@ defmodule BoxChar.CLI do
 
   def handle_parse({[], _, []}),               do: raise(ArgVError, :missing_mode)
   def handle_parse({_, _, []}),                do: raise(ArgVError, :multiple_modes)
-  def handle_parse({_, _, args}),              do: raise(CLIError, {:invalid_args, args})
+  def handle_parse({_, _, args}),              do: raise(CLIError, {:invalid_args, Enum.map(args, &elem(&1, 0))})
 
 
   def parse_path([path_str]) do
