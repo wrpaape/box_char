@@ -2,6 +2,7 @@ defmodule BoxChar.CLITest do
   use ExUnit.Case
   doctest BoxChar.CLI
 
+  alias IO.ANSI
   alias BoxChar.CLI
   alias BoxChar.CLIError
   alias BoxChar.ArgVError
@@ -25,7 +26,7 @@ defmodule BoxChar.CLITest do
       |> shuffle_in(rand_modes)
       |> shuffle_with(rand_charset_str)
       |> CLI.main
-    end) == @usage
+    end) |> trim == @usage
   end
 
   def rand_modes do
@@ -57,5 +58,18 @@ defmodule BoxChar.CLITest do
     flags
     |> rand_chunk
     |> Keyword.values
+  end
+
+  defp trim(str), do: :binary.replace(str, ansi_pattern, "", [:global]) 
+
+  # defp pattern, do: :binary.compile_pattern([puts_status | ansi_pattern])
+
+  # defp puts_status, do: capture_io(fn -> IO.puts "" end) 
+
+  defp ansi_pattern do
+    ANSI.__info__(:functions)
+    |> Enum.filter_map(&(elem(&1, 1) == 0), &apply(ANSI, elem(&1, 0), []))
+    |> Enum.filter(&is_binary/1)
+    |> :binary.compile_pattern
   end
 end
