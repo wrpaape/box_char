@@ -1,0 +1,14 @@
+defmodule BoxChar.CLI.UsageError do
+  use GenError
+
+  @errors Application.get_env(:box_char, __MODULE__)
+
+  error :missing_mode,         Keyword.get(@errors, :missing_mode)
+  error :multiple_modes,       Keyword.get(@errors, :multiple_modes)
+  error :missing_path,         Keyword.get(@errors, :missing_path)
+  error :extra_args,           Keyword.get(@errors, :extra_args)
+  error :missing_swap_charset, Keyword.get(@errors, :missing_swap_charset)
+  error :extra_swap_charsets,  Keyword.get(@errors, :extra_swap_charsets)
+  error :same_swap_charsets,   Keyword.get(@errors, :same_swap_charsets)
+  error :swap_new_charset_all, Keyword.get(@errors, :swap_new_charset_all)
+end

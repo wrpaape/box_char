@@ -8,7 +8,7 @@ defmodule GenError.Behaviour do
     end
   end
 
-  defmacro error(reason, msg) when is_atom(reason) and is_binary(msg) do
+  defmacro error(reason, msg) when is_atom(reason) do
     quote do
       def exception(unquote(reason)) do
         unquote(msg)
@@ -17,27 +17,27 @@ defmodule GenError.Behaviour do
     end
   end
 
-  defmacro error_with_args(reason) when is_atom(reason) do 
+  defmacro error_with_arg(reason) when is_atom(reason) do 
     quote do
       unquote(reason)
-      |> error_with_args(unquote(default_msg(reason)))
+      |> error_with_arg(unquote(default_msg(reason)))
     end
   end
 
-  defmacro error_with_args(reason, msg) when is_atom(reason) and is_binary(msg) do
+  defmacro error_with_arg(reason, msg) when is_atom(reason) do
     quote do
-      def exception({unquote(reason), args}) do
+      def exception({unquote(reason), arg}) do
         unquote(msg)
         <> ":"
-        <> emphasize(args)
+        <> emphasize(arg)
         |> put_msg
       end
     end
   end
 
-  defmacro emphasize(args) when is_list(args) do
+  defmacro emphasize(arg) when is_list(arg) do
     quote do
-      unquote(args)
+      unquote(arg)
       |> Enum.map_join(&emphasize/1)
     end
   end
@@ -53,11 +53,11 @@ defmodule GenError.Behaviour do
     end
   end
 
+  defmacro put_msg(msg), do: quote do: %__MODULE__{message: unquote(msg)}
+
   defp default_msg(reason) when is_atom(reason) do
     reason
     |> to_string
     |> :binary.replace(:binary.compile_pattern(~w(- _)), " ", [:global])
   end
-
-  defmacro put_msg(msg), do: quote do: %__MODULE__{message: unquote(msg)}
 end

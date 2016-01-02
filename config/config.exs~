@@ -1,39 +1,72 @@
+defmodule CLIConfig do
+  alias IO.ANSI
+  alias BoxChar.CLI.UsageError
+  alias BoxChar.CLI.ArgVError
+  
+  @usage ANSI.blue <> """
+    usage:
+
+      box_char map <charset> <path>
+
+    or
+
+      box_char map <charsets (slash delimited)> <path>
+
+    or
+
+      box_char swap <old charset>/<new charset> <path>
+    """ <> ANSI.reset
+
+
+  def get_config do
+    Keyword.new
+    |> Keyword.put(:usage, @usage)
+    |> Keyword.put(:timeout, :infinity)
+    |> Keyword.put(:parse_opts, parse_opts)
+    |> Keyword.put(:charset_flags, charset_flags)
+    |> Keyword.put(UsageError, usage_errors)
+    |> Keyword.put(ArgVError,  arg_v_errors)
+  end
+
+  defp parse_opts do
+    [strict:  [help: :boolean, map: :string, swap: :string],
+     aliases: [h:    :help,    m:   :map,    s:    :swap]]
+  end
+
+  defp charset_flags do
+    [light:  ~w(light l),
+     heavy:  ~w(heavy h),
+     double: ~W(double d),
+     all:    ~w(all a)]
+  end
+
+  defp usage_errors do
+    [missing_mode:         "please specify <mode> of operation",
+     multiple_modes:       "may only operate in one <mode> at a time",
+     missing_path:         "please specify <path> to file or populated directory",
+     extra_args:           "too many args!",
+     missing_swap_charset: "please specify <new charset> to swap with",
+     extra_swap_charsets:  "may only swap one <charset> at a time",
+     same_swap_charsets:   "<new_charset> must be different than <old_charset>",
+     swap_new_charset_all: "<old_charset> cannot be swapped for all charsets"]
+    |> Enum.map(fn({error, msg})->
+      {error, msg <> "\n\n" <> @usage}
+    end)
+  end
+
+  defp arg_v_errors do
+    [invalid_path:    "invalid path",
+     invalid_args:    "invalid arguments",
+     invalid_charset: "invalid charset selection",
+     no_files_found:  "failed to find file(s) at path"]
+  end
+end
+
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-alias BoxChar.ArgVError
-alias BoxChar.CLIError
-
-  config :box_char, [def_path: "**",
-                     def_opts: ~w(map heavy)a,
-                     timeout:  :infinity,
-                     errors: [{CLIError,  [invalid_path:         "invalid path",
-                                           invalid_args:         "invalid args",
-                                           no_files_found:       "failed to find file(s) at path",
-                                           invalid_charset:      "invalid charset"]},
-                              {ArgVError, [missing_mode:         "please specify <mode> of operation",
-                                           multiple_modes:       "may only operate in one <mode> at a time",
-                                           missing_path:         "please specify <path> to file or populated directory",
-                                           extra_args:           "too many args!",
-                                           missing_swap_charset: "please specify <new charset> to swap with",
-                                           extra_swap_charsets:  "may only swap one <charset> at a time",
-                                           same_swap_charsets:   "<new_charset> must be different than <old_charset>",
-                                           swap_new_charset_all: "<old_charset> cannot be swapped for all charsets"]}],
-                     usage:    """
-
-                               usage:
-
-                                 box_char <path> map <charset>
-
-                               or
-
-                                 box_char <path> map <charsets (slash delimited)>
-
-                               or
-
-                                 box_char <path> swap <old charset>/<new charset>
-                               """]  
+  config :box_char, CLIConfig.get_config
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
