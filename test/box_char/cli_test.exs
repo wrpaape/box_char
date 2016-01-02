@@ -9,7 +9,8 @@ defmodule BoxChar.CLITest do
 
   import ExUnit.CaptureIO
 
-  @usage  Application.get_env(:box_char, :usage)
+  @usage        Application.get_env(:box_char, :usage)
+  @root_path    Application.get_env(:box_char, :root_path)
   @usage_errors Application.get_env(:box_char, UsageError)
   @arg_v_errors Application.get_env(:box_char, ArgVError)
    |> Enum.map(fn({reason, msg_start})->
@@ -29,10 +30,7 @@ defmodule BoxChar.CLITest do
   test "help flag in argv => prints usage" do
     assert capture_io(fn ->
       @help_flags
-      |> Enum.random
-      |> shuffle_in(rand_modes)
-      |> shuffle_with(rand_charset_str)
-      |> shuffle_with(safe_path)
+      |> Enum.take_random(1)
       |> CLI.main
     end) == @usage
   end
@@ -46,9 +44,10 @@ defmodule BoxChar.CLITest do
 
   test "including more than one <mode> raises UsageError ':multiple_modes'" do
     assert_raise(UsageError, usage_error_msg(:multiple_modes), fn ->
-      @mode_flags
-      |> take_rand_flags(2)
-      |> Enum.concat([safe_charset_str, safe_path])
+      2
+      |> rand_mode_flags
+      |> Enum.flat_map(&[&1, safe_charset_str])
+      |> List.insert_at(-1, safe_path)
       |> CLI.main
     end)
   end
@@ -65,10 +64,19 @@ defmodule BoxChar.CLITest do
     end)
   end
 
+  test "forgetting <path> raises UsageError ':missing_path'" do
+    assert_raise(UsageError, usage_error_msg(:missing_path), fn ->
+      1
+      |> rand_mode_flags
+      |> List.insert_at(-1, safe_charset_str)
+      |> CLI.main
+    end)
+  end
 
-  def rand_modes do
-    @mode_flags 
-    |> rand_chunk_vals
+  def rand_mode_flags(count) do
+    @mode_flags
+    |> Enum.take_random(count)
+    |> Keyword.values
     |> Enum.map(&Enum.random/1)
   end
 
@@ -78,7 +86,7 @@ defmodule BoxChar.CLITest do
     |> Enum.map_join("/", &Enum.random/1) 
   end
 
-  def safe_arg_v, do: take_rand_flags(@mode_flags, 1) ++ [safe_charset_str, safe_path]
+  def safe_arg_v, do: rand_mode_flags(1) ++ [safe_charset_str, safe_path]
 
   def safe_charset_str do
     @charset_flags
@@ -88,11 +96,14 @@ defmodule BoxChar.CLITest do
     |> Enum.map_join("/", &Enum.random/1)
   end
 
-  def safe_path, do: "./**"
+  def safe_path do
+    ~w(test box_char dummy_files **)
+    |> Path.expand(@root_path)
+  end
 
   def take_rand_flags(flags, count) do
     flags
-    |> Keyword.keys
+    |> Keyword.values
     |> List.flatten
     |> Enum.take_random(count)
   end

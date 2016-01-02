@@ -47,7 +47,7 @@ defmodule BoxChar.CLI do
     |> handle_parse(path_str)
   end
 
-  def parse_path([]),        do: raise(UsageError, :no_path)
+  def parse_path([]),        do: raise(UsageError, :missing_path)
   def parse_path(_),         do: raise(UsageError, :extra_args) 
 
 
@@ -97,5 +97,5 @@ defmodule BoxChar.CLI do
   def handle_shutdown(_),     do: System.halt(0) 
 
   #helpers v  
-  defp strip_invalids(args), do: Enum.map(args, &elem(&1, 0))
+  defp strip_unknowns(args), do: Enum.map(args, &elem(&1, 0))
 end

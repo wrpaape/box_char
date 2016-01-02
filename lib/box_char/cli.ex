@@ -47,7 +47,7 @@ defmodule BoxChar.CLI do
     |> handle_parse(path_str)
   end
 
-  def parse_path([]),        do: raise(UsageError, :no_path)
+  def parse_path([]),        do: raise(UsageError, :missing_path)
   def parse_path(_),         do: raise(UsageError, :extra_args) 
 
 

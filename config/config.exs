@@ -1,5 +1,6 @@
 defmodule CLIConfig do
   alias IO.ANSI
+  alias Mix.Project
   alias BoxChar.CLI.UsageError
   alias BoxChar.CLI.ArgVError
   
@@ -22,10 +23,17 @@ defmodule CLIConfig do
     Keyword.new
     |> Keyword.put(:usage, @usage)
     |> Keyword.put(:timeout, :infinity)
+    |> Keyword.put(:root_path, root_path)
     |> Keyword.put(:parse_opts, parse_opts)
     |> Keyword.put(:charset_flags, charset_flags)
     |> Keyword.put(UsageError, usage_errors)
     |> Keyword.put(ArgVError,  arg_v_errors)
+  end
+
+  defp root_path do
+    ~w(.. .. .. ..)
+    |> Path.join
+    |> Path.expand(Project.app_path)
   end
 
   defp parse_opts do
