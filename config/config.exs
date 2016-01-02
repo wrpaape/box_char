@@ -38,7 +38,7 @@ defmodule CLIConfig do
   end
 
   defp parse_opts do
-    [strict:  [help: :boolean, map: :string, swap: :string],
+    [strict:  [help: :boolean, map: :boolean, swap: :string],
      aliases: [h:    :help,    m:   :map,    s:    :swap]]
   end
 

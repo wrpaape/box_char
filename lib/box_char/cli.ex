@@ -64,12 +64,6 @@ defmodule BoxChar.CLI do
     |> handle_parse(mode, files)
   end
 
-  # def extract_charset(charset_str) when charset_str in ~w(l light),  do: :light
-  # def extract_charset(charset_str) when charset_str in ~w(h heavy),  do: :heavy
-  # def extract_charset(charset_str) when charset_str in ~w(d double), do: :double
-  # def extract_charset(charset_str) when charset_str in ~w(a all),    do: :all
-  # def extract_charset(charset_str),                                  do: raise(ArgVError, {:invalid_charset, charset_str})
-
   def handle_parse([_], :swap, _),                             do: raise(UsageError, :missing_swap_charset) 
   def handle_parse([charset, charset], :swap, _),              do: raise(UsageError, :same_swap_charsets) 
   def handle_parse([_, :all], :swap, _),                       do: raise(UsageError, :swap_new_charset_all) 

@@ -34,6 +34,16 @@ defmodule BoxChar do
     }
   }
 
+  # 123
+  # qwe
+  # asd
+  #
+  #
+  #
+  #
+  #
+  #
+
   # def process(args), do: IO.inspect(args)
   def process({:help, msg}), do: IO.write(msg)
   def process({:swap, old_charset, new_charset, files}) do

@@ -13,10 +13,6 @@ defmodule BoxChar.CLI do
   # @charset_parse_opts [strict:  [light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
   #                      aliases: [l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]
 
-
-
-
-
   def main(argv) do
     argv
     |> OptionParser.parse(@parse_opts)
@@ -67,12 +63,6 @@ defmodule BoxChar.CLI do
     |> Enum.map(&extract_charset/1)
     |> handle_parse(mode, files)
   end
-
-  # def extract_charset(charset_str) when charset_str in ~w(l light),  do: :light
-  # def extract_charset(charset_str) when charset_str in ~w(h heavy),  do: :heavy
-  # def extract_charset(charset_str) when charset_str in ~w(d double), do: :double
-  # def extract_charset(charset_str) when charset_str in ~w(a all),    do: :all
-  # def extract_charset(charset_str),                                  do: raise(ArgVError, {:invalid_charset, charset_str})
 
   def handle_parse([_], :swap, _),                             do: raise(UsageError, :missing_swap_charset) 
   def handle_parse([charset, charset], :swap, _),              do: raise(UsageError, :same_swap_charsets) 

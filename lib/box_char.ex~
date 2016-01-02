@@ -35,7 +35,7 @@ defmodule BoxChar do
   }
 
   # def process(args), do: IO.inspect(args)
-  def process({:help, msg}), do: IO.puts(msg)
+  def process({:help, msg}), do: IO.write(msg)
   def process({:swap, old_charset, new_charset, files}) do
   end
 

@@ -227,19 +227,6 @@ defmodule BoxChar.CLITest do
     |> Keyword.values
   end
 
-  defp trim(str), do: :binary.replace(str, ansi_pattern, "", [:global]) 
-
-  # defp pattern, do: :binary.compile_pattern([puts_status | ansi_pattern])
-
-  # defp puts_status, do: capture_io(fn -> IO.puts "" end) 
-
   defp usage_error_msg(reason), do: Keyword.get(@usage_errors, reason)
   defp arg_v_error_msg(reason), do: Keyword.get(@arg_v_errors, reason)
-
-  defp ansi_pattern do
-    ANSI.__info__(:functions)
-    |> Enum.filter_map(&(elem(&1, 1) == 0), &apply(ANSI, elem(&1, 0), []))
-    |> Enum.filter(&is_binary/1)
-    |> :binary.compile_pattern
-  end
 end
