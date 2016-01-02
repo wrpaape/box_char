@@ -9,13 +9,17 @@ defmodule BoxChar.CLITest do
 
   import ExUnit.CaptureIO
 
-  @usage        Application.get_env(:box_char, :usage)
-  @root_path    Application.get_env(:box_char, :root_path)
-  @usage_errors Application.get_env(:box_char, UsageError)
-  @arg_v_errors Application.get_env(:box_char, ArgVError)
-   |> Enum.map(fn({reason, msg_start})->
-    {reason, Regex.compile!("^" <> msg_start <> ":")}
-   end)
+  @usage         Application.get_env(:box_char, :usage)
+  @root_path     Application.get_env(:box_char, :root_path)
+  @usage_errors  Application.get_env(:box_char, UsageError)
+  @arg_v_errors  Application.get_env(:box_char, ArgVError)
+    |> Enum.map(fn({reason, msg_start})->
+      {reason, Regex.compile!("^" <> Regex.escape(msg_start) <> ":\n  .*$", "s")}
+    end)
+
+  @dummy_path    ~w(test box_char dummy_files)
+    |> Path.join
+    |> Path.expand(@root_path)
 
   @charset_flags Application.get_env(:box_char, :charset_flags) 
   @help_flags    ~w(--help -h)
@@ -55,22 +59,76 @@ defmodule BoxChar.CLITest do
   test "including invalid option(s) raises ArgVError ':unknown_options'" do
     assert_raise(ArgVError, arg_v_error_msg(:unknown_options), fn ->
       [~w(--ooga booga), ~w(--fluffy wuffy), ~w(--bing bang)]
-      |> Enum.take_random(:rand.uniform(3))
-      |> Enum.reduce(safe_arg_v, fn(inv_opt, arg_v)->
-        Enum
-        |> apply(Enum.random(~w(into concat)a), [inv_opt, arg_v])
-      end)
+      |> take_at_least_one
+      |> rand_into_or_concat(safe_arg_v)
       |> CLI.main
     end)
   end
 
   test "forgetting <path> raises UsageError ':missing_path'" do
     assert_raise(UsageError, usage_error_msg(:missing_path), fn ->
-      1
-      |> rand_mode_flags
-      |> List.insert_at(-1, safe_charset_str)
+      safe_mode_charset
       |> CLI.main
     end)
+  end
+
+  test "including additional args raises UsageError ':extra_args'" do
+    assert_raise(UsageError, usage_error_msg(:extra_args), fn ->
+      [["foo"], ["bar"], ["baz"]]
+      |> take_at_least_one
+      |> rand_into_or_concat(safe_arg_v)
+      |> CLI.main
+    end)
+  end
+
+  test "nonexistent <path> raises ArgVError ':invalid_path'" do
+    assert_raise(ArgVError, arg_v_error_msg(:invalid_path), fn ->
+      safe_mode_charset
+      |> List.insert_at(-1, path_to_nothing)
+      |> CLI.main
+    end)
+  end
+
+  test "valid <path> with no files raises ArgVError ':no_files_found'" do
+    assert_raise(ArgVError, arg_v_error_msg(:no_files_found), fn ->
+      safe_mode_charset
+      |> List.insert_at(-1, empty_path)
+      |> CLI.main
+    end)
+  end
+
+  test "specifying a single <charset> in 'swap' <mode> raises UsageError ':missing_swap_charset'" do
+    assert_raise(UsageError, usage_error_msg(:missing_swap_charset), fn ->
+      rand_swap_flag
+      |> Enum.concat(take_rand_flags(@charset_flags, 1))
+      |> List.insert_at(-1, safe_path)
+      |> CLI.main
+    end)
+  end
+
+  test "duplicate <charsets> (<charset>/<charset>) in 'swap' <mode> raises UsageError ':same_swap_charsets'" do
+    assert_raise(UsageError, usage_error_msg(:same_swap_charsets), fn ->
+      @charset_flags
+      |> Keyword.delete(:all)
+      |> take_rand_flags(1)
+      |> Enum.map(&Path.join(&1, &1))
+      |> Enum.into(rand_swap_flag)
+      |> List.insert_at(-1, safe_path)
+      |> CLI.main
+    end)
+  end
+
+  def rand_swap_flag do
+    @mode_flags
+    |> Keyword.get(:swap)
+    |> Enum.take_random(1)
+  end
+
+
+  def safe_mode_charset do
+    1
+    |> rand_mode_flags
+    |> List.insert_at(-1, safe_charset_str)
   end
 
   def rand_mode_flags(count) do
@@ -96,9 +154,31 @@ defmodule BoxChar.CLITest do
     |> Enum.map_join("/", &Enum.random/1)
   end
 
-  def safe_path do
-    ~w(test box_char dummy_files)
-    |> Path.expand(@root_path)
+  def safe_path,      do: Path.join(@dummy_path, "**")
+  def empty_path,     do: Path.join(@dummy_path, "empty_dir")
+  def path_to_nothing do
+    ~w(path to nothing)
+    |> Path.join
+    |> Path.expand(@dummy_path)
+  end
+
+  def rand_into_or_concat(args, initial_argv) do
+    args
+    |> Enum.reduce(initial_argv, fn(arg, arg_v)->
+      Enum
+      |> apply(Enum.random(~w(into concat)a), [arg, arg_v])
+    end)
+  end
+
+  def take_at_least_one(list) do
+    list
+    |> Enum.take_random(rand_at_least_one(list))
+  end
+  
+  def rand_at_least_one(list) do
+    list
+    |> length
+    |> :rand.uniform
   end
 
   def take_rand_flags(flags, count) do

@@ -31,7 +31,8 @@ defmodule CLIConfig do
   end
 
   defp root_path do
-    ~w(.. .. .. ..)
+    ".."
+    |> List.duplicate(4)
     |> Path.join
     |> Path.expand(Project.app_path)
   end

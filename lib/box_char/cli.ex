@@ -13,10 +13,6 @@ defmodule BoxChar.CLI do
   # @charset_parse_opts [strict:  [light: :boolean, heavy: :boolean, double: :boolean, all: :boolean],
   #                      aliases: [l:     :light,   h:     :heavy,   d:      :double,  a:   :all]]
 
-
-
-
-
   def main(argv) do
     argv
     |> OptionParser.parse(@parse_opts)
