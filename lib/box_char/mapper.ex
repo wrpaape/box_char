@@ -6,13 +6,11 @@ defmodule BoxChar.Mapper do
 
   def scan(file, open, close, open_str) do
     file
-    |> File.open!(~w(read write)a, fn(file)->
-      file
-      |> IO.binread(:all)
-      |> :binary.split(open)
-      |> handle_split(open, close, open_str, "")
-      |> BoxChar.write_to_file(file)
-    end)
+    # |> File.open!([:write, encoding: :unicode], fn(file)->
+    |> File.read!
+    |> :binary.split(open)
+    |> handle_split(open, close, open_str, "")
+    |> BoxChar.write_to_file(file)
   end
 
   def handle_split([downstream], _, _, _, acc_file),         do: acc_file <> downstream
@@ -29,6 +27,6 @@ defmodule BoxChar.Mapper do
   def handle_close([input, downstream], upstream, open, close, open_str, acc_file) do
     downstream
     |> :binary.split(open)
-    |> handle_split(open, close, open_str, acc_file <> map_next(input, ""))
+    |> handle_split(open, close, open_str, acc_file <> upstream <> map_next(input, ""))
   end
 end

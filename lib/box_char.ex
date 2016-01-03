@@ -1,52 +1,6 @@
 defmodule BoxChar do
   alias BoxChar.Mapper
   alias BoxChar.Swapper
-  alias BoxChar.Supervisor
-
-  @box_char %{
-    thick:  %{
-      lines: %{
-        horiz: "═",
-        vert:  "║"
-      },
-      joiners: %{
-        top: "╦",
-        mid: "╬",
-        bot: "╩"
-      },
-      caps: %{
-        top: %{left: "╔", right: "╗"},
-        mid: %{left: "╠", right: "╣"},
-        bot: %{left: "╚", right: "╝"}
-      }
-    },
-    thin: %{
-      lines: %{
-        horiz: "─",
-        vert:  "│"
-      },
-      joiners: %{
-        top: "┬",
-        mid: "┼",
-        bot: "┴"
-      },
-      caps: %{
-        top: %{left: "┌", right: "┐"},
-        mid: %{left: "├", right: "┤"},
-        bot: %{left: "└", right: "┘"}
-      }
-    }
-  }
-
-  # 123
-  # qwe
-  # asd
-  #
-  #
-  #
-  #
-  #
-  #
 
   def process({:help, msg}), do: IO.write(msg)
   def process({:swap, old_charset, new_charset, files}) do
@@ -67,5 +21,5 @@ defmodule BoxChar do
   end
 
 
-  def write_to_file(contents, file), do: IO.write(file, contents)
+  def write_to_file(contents, file), do: File.write!(file, contents)
 end
