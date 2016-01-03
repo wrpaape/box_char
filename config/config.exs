@@ -74,15 +74,44 @@ defmodule CLIConfig do
   end
 end
 
-defmodule MapConfig do
-  
+defmodule MapperConfig do
+
+  def get_confg do
+    Keyword.new
+    |> Keyword.put(:light, light)
+    |> Keyword.put(:heavy, heavy)
+    |> Keyword.put(:double, double)
+  end
+
+  defp light do
+    [{"q", "┌"}, {"w", "┬"}, {"e", "┐"},
+     {"a", "├"}, {"s", "┼"}, {"d", "┤"},
+     {"z", "└"}, {"x", "┴"}, {"c", "┘"},
+     {"h", "─"}, {"v", "│"}]
+  end
+
+  defp heavy do
+    [{"Q", "┏"}, {"W", "┳"}, {"E", "┓"},
+     {"A", "┣"}, {"S", "╋"}, {"D", "┫"},
+     {"Z", "┗"}, {"X", "┻"}, {"C", "┛"},
+     {"H", "━"}, {"V", "┃"}]
+  end
+
+  defp double do
+    [{"1", "╔"}, {"2", "╦"}, {"3", "╗"},
+     {"4", "╠"}, {"5", "╬"}, {"6", "╣"},
+     {"7", "╚"}, {"8", "╩"}, {"9", "╝"},
+     {"=", "═"}, {"#", "║"}]
+  end
 end
 
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-  config :box_char, CLIConfig.get_config
+  config :box_char,
+    CLIConfig.get_config
+    |> Keyword.put(:char_map, MapperConfig.get_config)
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

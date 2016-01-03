@@ -1,40 +1,34 @@
 defmodule BoxChar.Mapper do
-  use GenServer
 
-  def start_link(escapes), do: GenServer.start_link(__MODULE__, escapes, name: __MODULE__)
-  def split_open(string),  do: GenServer.call(__MODULE__, {:split_open, string})
+  import BoxChar.Mapper.Initializer
 
-  def split_close(string), do: GenServer.call(__MODULE__, {:split_close, string})
-
-  def mend(string),        do: GenServer.call(__MODULE__, {:mend, string})
-
-  # def scan_file(file_str), do: GenServer.call(__MODULE__, {:scan_file, file_str})
-
-
-
-  def init({open_str, close_str}) do
-    {:ok, {:binary.compile_pattern(open_str), :binary.compile_pattern(close_str), open_str}}
+  def scan(file, open, close, open_str) do
+    file
+    |> File.open!(~w(read write)a, fn(file)->
+      file
+      |> IO.binread(:all)
+      |> :binary.split(open)
+      |> handle_split(open, close, open_str, "")
+      |> BoxChar.write_to_file(file)
+    end)
   end
 
-  def handle_call({:scan_file, file_str}, _from, {open, close, open_str}) do
-
-  end
-
-  def map_next([downstream], _, {_, _, acc_file}),         do: acc_file <> downstream
-  def map_next([upstream, downstream], close_pat, acc_tup) do
+  def handle_split([downstream], _, _, _, acc_file),         do: acc_file <> downstream
+  def handle_split([upstream, downstream], open, close, open_str, acc_file) do
     downstream
-    |> :binary.split(close_pat)
-    |> handle_close(upstream, acc_tup)
+    |> :binary.split(close)
+    |> handle_close(upstream, open, close, open_str, acc_file)
   end
 
-  def handle_close([downstream], upstream, {_, open, acc_file}) do
-    acc_file <> upstream <> open <> downstream
+  def handle_close([downstream], upstream, _, _, open_str, acc_file) do
+    acc_file <> upstream <> open_str <> downstream
   end
 
-  def handle_close([map_chars, downstream], upstream, {open_pat, _, acc_file}) do
-
+  def handle_close([input, downstream], upstream, open, close, open_str, acc_file}) do
+    downstream
+    |> :binary.split(open)
+    |> handle_split(open, close, open_str, acc_file <> map_next(input, ""))
   end
 
-
-  defp write_to_file(contents, file), do: IO.write(file, contents)
+  def map_next()
 end
