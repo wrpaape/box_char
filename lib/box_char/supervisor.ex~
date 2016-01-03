@@ -1,0 +1,3 @@
+defmodule BoxChar.Supervisor do
+  
+end
