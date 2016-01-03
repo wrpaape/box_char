@@ -2,6 +2,8 @@ defmodule BoxChar.Mapper do
 
   import BoxChar.Mapper.Initializer
 
+  define_map_next_functions
+
   def scan(file, open, close, open_str) do
     file
     |> File.open!(~w(read write)a, fn(file)->
@@ -24,11 +26,9 @@ defmodule BoxChar.Mapper do
     acc_file <> upstream <> open_str <> downstream
   end
 
-  def handle_close([input, downstream], upstream, open, close, open_str, acc_file}) do
+  def handle_close([input, downstream], upstream, open, close, open_str, acc_file) do
     downstream
     |> :binary.split(open)
     |> handle_split(open, close, open_str, acc_file <> map_next(input, ""))
   end
-
-  def map_next()
 end

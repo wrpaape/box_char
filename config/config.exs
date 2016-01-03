@@ -75,12 +75,18 @@ defmodule CLIConfig do
 end
 
 defmodule MapperConfig do
-
-  def get_confg do
+  def get_config do
     Keyword.new
-    |> Keyword.put(:light, light)
-    |> Keyword.put(:heavy, heavy)
-    |> Keyword.put(:double, double)
+    |> Keyword.put(:char_map, char_map)
+  end
+
+  defp char_map do
+    light
+    |> Enum.concat(heavy)
+    |> Enum.concat(double)
+    # |> Enum.map(fn({<< cp_value >>, box_char})->
+    #   {cp_value, box_char}
+    # end)
   end
 
   defp light do
@@ -109,9 +115,8 @@ end
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-  config :box_char,
-    CLIConfig.get_config
-    |> Keyword.put(:char_map, MapperConfig.get_config)
+  config :box_char, CLIConfig.get_config
+    |> Keyword.merge(MapperConfig.get_config)
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
