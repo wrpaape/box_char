@@ -5,9 +5,8 @@ defmodule BoxChar.Swapper do
   define_swap_next_functions
 
   def scan(file, old, new) do
-    file
-    |> File.read!
-    |> swap_next("", old, new, File.read!(file), "")
+    old
+    |> swap_next(new, File.read!(file), "")
     |> BoxChar.write_to_file(file)
   end
 end

@@ -95,18 +95,18 @@ defmodule MainConfig do
     end)
     |> List.zip
     |> Enum.flat_map(fn({l, h, d})->
-      [[light:  :heavy,  {l, h}],
-       [light:  :double, {l, d}],
-       [heavy:  :light,  {h, l}],
-       [heavy:  :double, {h, d}],
-       [double: :light,  {d, l}],
-       [double: :heavy,  {d, h}],
-       [all:    :light,  {h, l}],
-       [all:    :light,  {d, l}],
-       [all:    :heavy,  {l, h}],
-       [all:    :heavy,  {d, h}],
-       [all:    :double, {l, d}],
-       [all:    :double, {h, d}]]
+      [[:light,  :heavy,  l, h],
+       [:light,  :double, l, d],
+       [:heavy,  :light,  h, l],
+       [:heavy,  :double, h, d],
+       [:double, :light,  d, l],
+       [:double, :heavy,  d, h],
+       [:all,    :light,  h, l],
+       [:all,    :light,  d, l],
+       [:all,    :heavy,  l, h],
+       [:all,    :heavy,  d, h],
+       [:all,    :double, l, d],
+       [:all,    :double, h, d]]
     end)
   end
 

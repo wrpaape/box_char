@@ -11,12 +11,12 @@ defmodule BoxChar.Mapper.Initializer do
         end
       end)
 
-      def map_next("", acc_str), do: acc_str
-
       def map_next(<< no_match :: binary-size(1) >> <> rem_str, acc_str) do
         rem_str
         |> map_next(acc_str <> no_match)
       end
+
+      def map_next("", acc_str), do: acc_str
     end
   end
 end

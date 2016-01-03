@@ -10,7 +10,6 @@ defmodule BoxChar.CLI do
   @spec_delim    Application.get_env(:box_char, :spec_delim)
   @parse_opts    Application.get_env(:box_char, :parse_opts)
   @timeout       Application.get_env(:box_char, :timeout)
-  # @file_stream_modes [:read, :char_list, encoding: :unicode]
 
   def main(argv) do
     argv
@@ -83,7 +82,7 @@ defmodule BoxChar.CLI do
   def handle_charsets([_], _),             do: raise(UsageError, :missing_swap_charset) 
   def handle_charsets([same, same], _),    do: raise(UsageError, :same_swap_charsets) 
   def handle_charsets([_, :all], _),       do: raise(UsageError, :swap_new_charset_all) 
-  def handle_charsets([old, new], files),  do: {:swap, old, new, files}
+  def handle_charsets([old, new], files),  do: IO.inspect({:swap, old, new, files})
   def handle_charsets(_, _),               do: raise(UsageError, :extra_swap_charsets) 
 
   def handle_shutdown(:test), do: exit(:normal)

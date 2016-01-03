@@ -4,6 +4,11 @@ defmodule BoxChar do
 
   def process({:help, msg}), do: IO.write(msg)
   def process({:swap, old_charset, new_charset, files}) do
+    files
+    |> Enum.each(fn(file)->
+      Swapper
+      |> spawn(:scan, [file, old_charset, new_charset])
+    end)
   end
 
   def process({:map, open, close, files}) do

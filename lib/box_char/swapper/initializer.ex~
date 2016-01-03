@@ -4,22 +4,19 @@ defmodule BoxChar.Swapper.Initializer do
   defmacro define_swap_next_functions do
     quote [bind_quoted: [swap_map: @swap_map]] do 
       swap_map
-      |> Enum.each(fn([{old_set, new_set}, {old_char, new_char}])->
+      |> Enum.each(fn([old_set, new_set, old_char, new_char])->
         def swap_next(unquote(old_set), unquote(new_set), unquote(old_char) <> rem_str, acc_str) do
-          rem_str
-          |> swap_next(acc_str <> unquote(new_char))
+          unquote(old_set)
+          |> swap_next(unquote(new_set), rem_str, acc_str <> unquote(new_char))
         end
 
-        def swap_next(unquote(old_set), unquote(new_set), << no_match :: binary-size(1) >> <> rem_str, acc_str) do
+        def swap_next(_, _, << no_match :: binary-size(1) >> <> rem_str, acc_str) do
           unquote(old_set)
-          |> swap_next(unquote(new_set)
-
-          |> swap_next(acc_str <> no_match)
+          |> swap_next(unquote(new_set), rem_str, acc_str <> no_match)
         end
       end)
 
       def swap_next(_, _, "", acc_str), do: acc_str
-
     end
   end
 end
