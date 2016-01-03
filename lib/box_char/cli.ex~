@@ -82,7 +82,7 @@ defmodule BoxChar.CLI do
   def handle_charsets([_], _),             do: raise(UsageError, :missing_swap_charset) 
   def handle_charsets([same, same], _),    do: raise(UsageError, :same_swap_charsets) 
   def handle_charsets([_, :all], _),       do: raise(UsageError, :swap_new_charset_all) 
-  def handle_charsets([old, new], files),  do: IO.inspect({:swap, old, new, files})
+  def handle_charsets([old, new], files),  do: IO.inspect {:swap, old, new, files}
   def handle_charsets(_, _),               do: raise(UsageError, :extra_swap_charsets) 
 
   def handle_shutdown(:test), do: exit(:normal)
