@@ -1,5 +1,5 @@
 defmodule BoxChar.CLI do
-  alias BoxChar.CLI.ArgVError
+  alias BoxChar.CLI.InputError
   alias BoxChar.CLI.UsageError
 
   import BoxChar.CLI.Initializer
@@ -33,7 +33,7 @@ defmodule BoxChar.CLI do
   end
 
   def handle_parse({_, _, []}),                        do: raise(UsageError, :multiple_modes)
-  def handle_parse({_, _, args}),                      do: raise(ArgVError, {:unknown_options, strip_unknowns(args)})
+  def handle_parse({_, _, args}),                      do: raise(InputError, {:unknown_options, strip_unknowns(args)})
 
   def parse_path([path_str]) do
     path_str
@@ -44,14 +44,14 @@ defmodule BoxChar.CLI do
   def parse_path([]),        do: raise(UsageError, :missing_path)
   def parse_path(_),         do: raise(UsageError, :extra_args) 
   
-  def handle_path([], path_str),       do: raise(ArgVError, {:invalid_path, path_str})
+  def handle_path([], path_str),       do: raise(InputError, {:invalid_path, path_str})
   def handle_path(path_glob, path_str) do
     path_glob
     |> Enum.filter(&File.regular?/1)
     |> parse_file_paths(path_str)
   end
 
-  def parse_file_paths([], path_str),  do: raise(ArgVError, {:no_files_found, path_str})
+  def parse_file_paths([], path_str),  do: raise(InputError, {:no_files_found, path_str})
   def parse_file_paths(file_paths, _), do: file_paths
 
   def parse_spec(files, spec_str) do
@@ -60,30 +60,32 @@ defmodule BoxChar.CLI do
     |> handle_spec(files, spec_str)
   end
 
-  def handle_spec([], _, spec_str),  do: {:empty, spec_str}
-  def handle_spec([_], _, spec_str), do: {:missing, spec_str}
-  def handle_spec(spec, files, _),   do: {files, spec}
+  def handle_spec([], _, spec_str),           do: {:empty, spec_str}
+  def handle_spec([_], _, _),                 do: :missing
+  def handle_spec([_ | [_ | [_ | _]]], _, _), do: :extra
+  def handle_spec(spec, files, _),            do: {files, spec}
 
 
-  def handle_mode({:empty, spec_str}, :map),     do: raise(UsageError, {:invalid_escapes, spec_str})
-  def handle_mode({:missing, spec_str}, :map),   do: raise(UsageError, {:no_delim_escapes, spec_str})
-  def handle_mode({files, [open, close]}, :map), do: {:map, open, close, files}
-  def handle_mode(_, :map),                      do: raise(UsageError, :delim_in_escapes)
+  def handle_mode(:extra, :map),           do: raise(UsageError, :delim_in_escapes)
+  def handle_mode(:missing, :map),         do: raise(UsageError, :no_delim_escapes)
+  def handle_mode({:empty, str}, :map),    do: raise(InputError, {:invalid_escapes, str})
+  def handle_mode({files, escapes}, :map), do: {:map, escapes, files}
 
-  def handle_mode({:empty, spec_str}, :swap),    do: raise(UsageError, {:invalid_charsets, spec_str})
-  def handle_mode({:missing, spec_str}, :swap),  do: raise(UsageError, {:no_delim_charsets, spec_str})
-  def handle_mode({_, [str, str]}, :swap),       do: raise(UsageError, :same_swap_charsets)
-  def handle_mode({files, charset_strs}, :swap)  do
-    charset_strs
+  def handle_mode(:extra, :swap),          do: raise(UsageError, :extra_swap_charsets) 
+  def handle_mode(:missing, :swap),        do: raise(UsageError, :no_delim_charsets)
+  def handle_mode({:empty, str}, :swap),   do: raise(InputError, {:invalid_charsets, str})
+  def handle_mode({_, [str, str]}, :swap), do: raise(UsageError, :same_swap_charsets)
+  def handle_mode({files, strs}, :swap)    do
+    strs
     |> Enum.map(&parse_charset/1)
     |> handle_charsets(files)
   end
 
-  def handle_charsets([_], _),             do: raise(UsageError, :missing_swap_charset) 
-  def handle_charsets([same, same], _),    do: raise(UsageError, :same_swap_charsets) 
-  def handle_charsets([_, :all], _),       do: raise(UsageError, :swap_new_charset_all) 
-  def handle_charsets([old, new], files),  do: IO.inspect {:swap, old, new, files}
-  def handle_charsets(_, _),               do: raise(UsageError, :extra_swap_charsets) 
+  def handle_charsets([_], _),           do: raise(UsageError, :missing_swap_charset) 
+  def handle_charsets([same, same], _),  do: raise(UsageError, :same_swap_charsets) 
+  def handle_charsets([_, :all], _),     do: raise(UsageError, :swap_new_charset_all) 
+  def handle_charsets(charsets, files),  do: {:swap, charsets, files}
+
 
   def handle_shutdown(:test), do: exit(:normal)
   def handle_shutdown(_),     do: System.halt(0) 

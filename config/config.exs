@@ -2,7 +2,7 @@ defmodule CLIConfig do
   alias IO.ANSI
   alias Mix.Project
   alias BoxChar.CLI.UsageError
-  alias BoxChar.CLI.ArgVError
+  alias BoxChar.CLI.InputError
   
   @spec_delim ","
   @usage ANSI.blue <> """
@@ -25,7 +25,7 @@ defmodule CLIConfig do
     |> Keyword.put(:parse_opts, parse_opts)
     |> Keyword.put(:charset_flags, charset_flags)
     |> Keyword.put(UsageError, usage_errors)
-    |> Keyword.put(ArgVError,  arg_v_errors)
+    |> Keyword.put(InputError, input_errors)
   end
 
   defp root_path do
@@ -52,25 +52,25 @@ defmodule CLIConfig do
      multiple_modes:       "may only operate in one <mode> at a time",
      missing_path:         "please specify <path> to file or populated directory",
      extra_args:           "too many args!",
-     invalid_escapes:      "invalid <escapes>",
-     invalid_charsets:     "invalid <charsets>",
      no_delim_escapes:     "please delimit your <escapes> with '#{@spec_delim}'",
      no_delim_charsets:    "please delimit your <escapes> with '#{@spec_delim}'",
      delim_in_escapes:     "please exclude '#{@spec_delim}' from your <escapes>",
      missing_swap_charset: "please specify <new charset> to swap with",
      extra_swap_charsets:  "may only swap one <charset> at a time",
      same_swap_charsets:   "<new_charset> must be different than <old_charset>",
-     swap_new_charset_all: "<old_charset> cannot be swapped for all charsets"]
+     swap_new_charset_all: "<old_charset> cannot be swapped for 'all' <charsets>"]
     |> Enum.map(fn({error, msg})->
       {error, msg <> "\n\n" <> @usage}
     end)
   end
 
-  defp arg_v_errors do
-    [invalid_path:    "invalid path",
-     unknown_options: "unknown options",
-     invalid_charset: "invalid charset selection",
-     no_files_found:  "failed to find file(s) at path"]
+  defp input_errors do
+    [invalid_path:     "invalid path",
+     unknown_options:  "unknown options",
+     invalid_escapes:  "invalid <escapes>",
+     invalid_charsets: "invalid <charsets>",
+     invalid_charset:  "invalid charset selection",
+     no_files_found:   "failed to find file(s) at path"]
   end
 end
 

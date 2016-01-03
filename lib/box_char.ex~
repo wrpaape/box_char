@@ -2,28 +2,16 @@ defmodule BoxChar do
   alias BoxChar.Mapper
   alias BoxChar.Swapper
 
-  def process({:help, msg}), do: IO.write(msg)
-  def process({:swap, old_charset, new_charset, files}) do
-    files
-    |> Enum.each(fn(file)->
-      Swapper
-      |> spawn(:scan, [file, old_charset, new_charset])
-    end)
+  def process({:help, msg}),             do: IO.write(msg)
+  def process({:swap, charsets, files}), do: spawn_workers(charsets, files, Swapper)
+  def process({:map, escapes, files})    do
+    escapes
+    |> Enum.map(:binary.compile_pattern/1)
+    |> List.insert_at(-1, hd(escapes))
+    |> spawn_workers(files, Mapper)
   end
 
-  def process({:map, open, close, files}) do
-    open
-    |> :binary.compile_pattern
-    |> spawn_mappers(:binary.compile_pattern(close), open, files)
-  end
-
-  def spawn_mappers(open, close, open_str, files) do
-    files
-    |> Enum.each(fn(file)->
-      Mapper
-      |> spawn(:scan, [file, open, close, open_str])
-    end)
-  end
+  def spawn_workers(args, files, mod), do: Enum.each(files, &spawn(mod, :scan, [&1 | args]))
 
 
   def write_to_file(contents, file), do: File.write!(file, contents)

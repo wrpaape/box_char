@@ -53,7 +53,7 @@ defmodule GenError.Behaviour do
     end
   end
 
-  defmacro put_msg(msg), do: quote do: %__MODULE__{message: unquote(msg)}
+  defmacro put_msg(msg), do: quote do: %__MODULE__{message: "**\n\n" <> ANSI.red <> unquote(msg) <> ANSI.reset}
 
   defp default_msg(reason) when is_atom(reason) do
     reason
