@@ -68,7 +68,7 @@ defmodule BoxChar.CLI do
 
   def handle_mode({:empty, spec_str}, :map),     do: raise(UsageError, {:invalid_escapes, spec_str})
   def handle_mode({:missing, spec_str}, :map),   do: raise(UsageError, {:no_delim_escapes, spec_str})
-  def handle_mode({files, [open, close]}, :map), do: {:map, {open, close}, files}
+  def handle_mode({files, [open, close]}, :map), do: {:map, open, close, files}
   def handle_mode(_, :map),                      do: raise(UsageError, :delim_in_escapes)
 
   def handle_mode({:empty, spec_str}, :swap),    do: raise(UsageError, {:invalid_charsets, spec_str})

@@ -1,3 +1,13 @@
 defmodule BoxChar.Swapper do
-  
+
+  import BoxChar.Swapper.Initializer
+
+  define_swap_next_functions
+
+  def scan(file, old, new) do
+    file
+    |> File.read!
+    |> swap_next("", old, new, File.read!(file), "")
+    |> BoxChar.write_to_file(file)
+  end
 end

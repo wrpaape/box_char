@@ -74,19 +74,40 @@ defmodule CLIConfig do
   end
 end
 
-defmodule MapperConfig do
+defmodule MainConfig do
   def get_config do
     Keyword.new
     |> Keyword.put(:char_map, char_map)
+    |> Keyword.put(:swap_map, swap_map)
   end
 
   defp char_map do
     light
     |> Enum.concat(heavy)
     |> Enum.concat(double)
-    # |> Enum.map(fn({<< cp_value >>, box_char})->
-    #   {cp_value, box_char}
-    # end)
+  end
+
+  defp swap_map do
+    [light, heavy, double]
+    |> Enum.map(fn(charset)->
+      charset
+      |> Enum.map(&elem(&1, 1))
+    end)
+    |> List.zip
+    |> Enum.flat_map(fn({l, h, d})->
+      [[light:  :heavy,  {l, h}],
+       [light:  :double, {l, d}],
+       [heavy:  :light,  {h, l}],
+       [heavy:  :double, {h, d}],
+       [double: :light,  {d, l}],
+       [double: :heavy,  {d, h}],
+       [all:    :light,  {h, l}],
+       [all:    :light,  {d, l}],
+       [all:    :heavy,  {l, h}],
+       [all:    :heavy,  {d, h}],
+       [all:    :double, {l, d}],
+       [all:    :double, {h, d}]]
+    end)
   end
 
   defp light do
@@ -116,7 +137,7 @@ end
 use Mix.Config
 
   config :box_char, CLIConfig.get_config
-    |> Keyword.merge(MapperConfig.get_config)
+    |> Keyword.merge(MainConfig.get_config)
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

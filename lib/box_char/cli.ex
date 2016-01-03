@@ -10,7 +10,6 @@ defmodule BoxChar.CLI do
   @spec_delim    Application.get_env(:box_char, :spec_delim)
   @parse_opts    Application.get_env(:box_char, :parse_opts)
   @timeout       Application.get_env(:box_char, :timeout)
-  # @file_stream_modes [:read, :char_list, encoding: :unicode]
 
   def main(argv) do
     argv

@@ -1,5 +1,4 @@
 defmodule BoxChar.Mapper.Initializer do
-
   @char_map Application.get_env(:box_char, :char_map) 
 
   defmacro define_map_next_functions do

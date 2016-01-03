@@ -6,7 +6,6 @@ defmodule BoxChar.Mapper do
 
   def scan(file, open, close, open_str) do
     file
-    # |> File.open!([:write, encoding: :unicode], fn(file)->
     |> File.read!
     |> :binary.split(open)
     |> handle_split(open, close, open_str, "")
