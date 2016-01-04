@@ -6,7 +6,7 @@ defmodule BoxChar do
   def process({:swap, charsets, files}), do: spawn_workers(charsets, files, Swapper)
   def process({:map, escapes, files})    do
     escapes
-    |> Enum.map(:binary.compile_pattern/1)
+    |> Enum.map(&:binary.compile_pattern/1)
     |> List.insert_at(-1, hd(escapes))
     |> spawn_workers(files, Mapper)
   end
